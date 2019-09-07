@@ -12,6 +12,9 @@ class DataSource():
     def get_buffer():
         return []
 
+    @property
+    def x_axis_values(self):
+        return []
 
 
 class SoundCardDataSource(DataSource):
@@ -53,6 +56,20 @@ class SoundCardDataSource(DataSource):
             input=True
         )
 
+
+    def get_buffer(self):
+        """Return all chunks joined together"""
+        a = self.buffer[:self.next_chunk]
+        b = self.buffer[self.next_chunk:]
+        return np.concatenate((b, a), axis=0) \
+                 .reshape((self.buffer.shape[0] * self.buffer.shape[1],
+                           self.buffer.shape[2]))
+
+    @property
+    def x_axis_values(self):
+        N = self.buffer.shape[0] * self.buffer.shape[1]
+        return np.linspace(0, N/self.fs, N)
+
     def __del__(self):
         if self.stream:
             self.stream.stop_stream()
@@ -81,22 +98,9 @@ class SoundCardDataSource(DataSource):
         self._num_chunks = n
         self._allocate_buffer()
 
-    def get_buffer(self):
-        """Return all chunks joined together"""
-        a = self.buffer[:self.next_chunk]
-        b = self.buffer[self.next_chunk:]
-        return np.concatenate((b, a), axis=0) \
-                 .reshape((self.buffer.shape[0] * self.buffer.shape[1],
-                           self.buffer.shape[2]))
-
-    @property
-    def timeValues(self):
-        N = self.buffer.shape[0] * self.buffer.shape[1]
-        return np.linspace(0, N/self.fs, N)
-
     @staticmethod
     def data_to_array(data, channels):
-        return (np.frombuffer(data, dtype=np.int16)
+        return(np.frombuffer(data, dtype=np.int16)
                 .reshape((-1, channels))
                 .astype(float) / 2**15)
 
@@ -106,13 +110,31 @@ class SoundCardDataSource(DataSource):
 
 class FFTDataSource(threading.Thread):
 
-    def __init__(self, source):
+    def __init__(self, source, log_scale=True):
         super().__init__()
-        self._source = source
+        self._src      = source
+        self.buffer    = []
+        self.log_scale = log_scale
+
+    def get_buffer(self):
+        
+        data      = self._src.get_buffer()
+        time_vals = self._src.x_axis_values     # FIXME: can be cached
+        weighting = np.exp(time_vals / time_vals[-1])
+        Pxx       = FFTDataSource.fft_buffer(weighting * data[:, 0])
+
+        if self.log_scale:
+            Pxx = 20 * np.log10(Pxx)
+
+        return(Pxx)
 
     def run(self):
         print("Thread running")
 
+    @property
+    def x_axis_values(self):
+        FFTDataSource.rfftfreq(len(self._src.x_axis_values),
+                               1./self._src.fs)
 
     # Based on function from numpy 1.8
     @staticmethod
@@ -189,6 +211,23 @@ class FFTDataSource(threading.Thread):
             j, k = edges[i], edges[i+1]
             peaks.append(j + np.argmax(peakedness[j:k]))
         return peaks
+
+    @staticmethod
+    def fft_buffer(x):
+        window = np.hanning(x.shape[0])
+
+        # Calculate FFT
+        fx = np.fft.rfft(window * x)
+
+        # Convert to normalised PSD
+        Pxx = abs(fx)**2 / (np.abs(window)**2).sum()
+
+        # Scale for one-sided (excluding DC and Nyquist frequencies)
+        Pxx[1:-1] *= 2
+
+        # And scale by frequency to get a result in (dB/Hz)
+        # Pxx /= Fs
+        return Pxx ** 0.5
 
 
 
