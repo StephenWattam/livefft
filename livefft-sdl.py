@@ -31,15 +31,13 @@ def run():
         events = sdl2.ext.get_events()
         for event in events:
 
+            if event.type == sdl2.SDL_WINDOWEVENT:
+                if event.window.event == sdl2.SDL_WINDOWEVENT_RESIZED:
+                    visualisation.set_surface(window.get_surface())
+
             if event.type == sdl2.SDL_QUIT:
                 running = False
                 break
-            if event.type == sdl2.SDL_WINDOWEVENT_RESIZED:
-                print(f"!**")
-                # self.event = resizeEvent
-                # self.width = event.window.data1
-                # self.height = event.window.data2
-                # self.reshape ()
 
             if event.type == sdl2.SDL_KEYDOWN:
 

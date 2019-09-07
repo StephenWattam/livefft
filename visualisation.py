@@ -62,6 +62,13 @@ class FFTVisualisation:
         self.fft_freq_range = max(min(self.fft_freq_range + delta, 1), 0.1)
         print(f"FFT range: {self.fft_freq_range}")
 
+    def set_surface(self, new_surface):
+        """Called on resize event"""
+        self.surface = new_surface
+
+        sdl2.ext.fill(self.surface, BLACK)
+        self.scan_y = self.surface.h - 1
+
     def update(self):
 
         # Delay and update
