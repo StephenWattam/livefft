@@ -65,6 +65,8 @@ def run():
                     visualisation.alter_fft_range(0.05)
                 elif event.key.keysym.scancode == sdl2.SDL_SCANCODE_W:
                     visualisation.alter_fft_range(-0.05)
+                elif event.key.keysym.scancode == sdl2.SDL_SCANCODE_L:
+                    visualisation.toggle_clock()
             elif event.type == sdl2.SDL_KEYUP:
                 print(f"KEYUP: {event}")
 

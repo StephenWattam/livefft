@@ -3,16 +3,21 @@ import sdl2
 import sdl2.ext
 import colorsys
 import math
+from datetime import datetime
 
 import numpy as np
 
 DEFAULT_DELAY = 10
 DEFAULT_FFT_RANGE = (-120, 0)
 
-BLACK = sdl2.ext.Color(100, 100, 100)
+BAR_COLOUR = sdl2.ext.Color(100, 100, 100)
+BLACK      = sdl2.ext.Color(0, 0, 0)
 
 MIN_DELAY = 1
 MAX_DELAY = 100
+
+TEXT_MARGIN = 5
+CLOCK_HEIGHT = 20
 
 class FFTVisualisation:
 
@@ -28,6 +33,8 @@ class FFTVisualisation:
         self.leading_line_width = 2
         self.pause              = False
         self.party_mode         = False
+        self.clock              = False
+        self.scan_y_since_last_clock = self.surface.h
         self.fft_freq_range     = 1
 
         # Colour settings (0-1)
@@ -39,28 +46,31 @@ class FFTVisualisation:
 
     def alter_delay(self, delta):
         self._delay = max(min(self._delay + delta, MAX_DELAY), MIN_DELAY)
-        print(f"Delay: {self._delay}")
+        self._status_text(f"Delay: {self._delay}")
 
     def alter_colour_offset(self, delta):
         self.colour_offset = (self.colour_offset + delta) % 1
-        print(f"Colour offset: {self.colour_offset}")
+        self._status_text(f"Colour offset: {self.colour_offset:.2f}")
 
     def alter_colour_range(self, delta):
         self.colour_range = (self.colour_range + delta) % 2
-        print(f"Colour range: {self.colour_range}")
+        self._status_text(f"Colour range: {self.colour_range:.2f}")
 
     def toggle_pause(self):
         self.pause = not self.pause
-        print(f"Pause: {self.pause}")
-        # self._render_text("test")
+        self._status_text(f"Pause: {self.pause}")
+
+    def toggle_clock(self):
+        self.clock = not self.clock
+        self._status_text(f"Clock: {self.clock}")
 
     def toggle_party_mode(self):
         self.party_mode = not self.party_mode
-        print(f"Party mode: {self.party_mode}")
+        self._status_text(f"Party mode: {self.party_mode}")
 
     def alter_fft_range(self, delta):
         self.fft_freq_range = max(min(self.fft_freq_range + delta, 1), 0.1)
-        print(f"FFT range: {self.fft_freq_range}")
+        self._status_text(f"FFT range: {self.fft_freq_range:.2f}")
 
     def set_surface(self, new_surface):
         """Called on resize event"""
@@ -68,6 +78,7 @@ class FFTVisualisation:
 
         sdl2.ext.fill(self.surface, BLACK)
         self.scan_y = self.surface.h - 1
+        self.scan_y_since_last_clock = self.surface.h - 1
 
     def update(self):
 
@@ -84,10 +95,14 @@ class FFTVisualisation:
         self._render_leading_line()
         self._render_fft_colour_line(fft_buf)
 
+        if self.clock and self.scan_y_since_last_clock - self.scan_y  > CLOCK_HEIGHT + TEXT_MARGIN:
+            self._render_clock()
+
         if not self.pause:
             self.scan_y -= 1
             if self.scan_y < 0:
                 self.scan_y = self.surface.h - 1
+                self.scan_y_since_last_clock = self.surface.h - 1
 
         if self.party_mode:
             self.colour_offset += self.colour_range * 0.001
@@ -96,7 +111,7 @@ class FFTVisualisation:
         """Render the black leading FFT line"""
 
         for i in range(max(0, self.scan_y - self.leading_line_width), self.scan_y):
-            sdl2.ext.line(self.surface, BLACK, (0, i, self.surface.w, i))
+            sdl2.ext.line(self.surface, BAR_COLOUR, (0, i, self.surface.w, i))
 
 
     def _render_fft_colour_line(self, buf, downsample=1):
@@ -107,6 +122,7 @@ class FFTVisualisation:
 
         for p in points:
             pixels[p[0]][self.scan_y] = self.colour_simple(p[1])
+
 
 
     @staticmethod
@@ -130,9 +146,28 @@ class FFTVisualisation:
 
 
 
-    # def _render_text(self, text):
-    #     font_manager = sdl2.ext.FontManager(sdl2.ext.Resources(__file__, "fonts").get_path("tuffy.ttf"))
-    #     surface = font_manager.render(text)
+    def _status_text(self, text, right_align=True, below_line=False):
+        font_manager = sdl2.ext.FontManager(sdl2.ext.Resources(__file__, "fonts").get_path("tuffy.ttf"))
+
+        text_surface = font_manager.render(text)
+        text_rect = text_surface.clip_rect
+
+        # Compute position
+        if below_line:
+            dst_y = min(self.scan_y + TEXT_MARGIN, self.surface.h - text_surface.h - TEXT_MARGIN)
+        else:
+            dst_y = max(self.scan_y - text_surface.h - TEXT_MARGIN, 0)
+        if right_align:
+            dst_x = max(self.surface.w - text_surface.w - TEXT_MARGIN, 0)
+        else:
+            dst_x = TEXT_MARGIN
+
+        sdl2.SDL_BlitSurface(text_surface, None, self.surface, sdl2.SDL_Rect(dst_x, dst_y))
+
+    def _render_clock(self):
+        now = datetime.now().strftime("%x  %X")
+        self._status_text(now, below_line=True)
+        self.scan_y_since_last_clock = self.scan_y
 
     # def render_line(surface, colour, buf, y_range=None, y_pos=None, downsample=5, y_zoom=1):
 
