@@ -18,7 +18,7 @@ FFT_RANGE  = (-120, 5)
 def run():
     sdl2.ext.init()
     window = sdl2.ext.Window("FFT Visualiser", size=(800, 600),
-                             flags=sdl2.SDL_WINDOW_RESIZABLE | sdl2.SDL_WINDOW_BORDERLESS) # | sdl2.SDL_WINDOW_FULLSCREEN_DESKTOP)
+                             flags=sdl2.SDL_WINDOW_RESIZABLE )#| sdl2.SDL_WINDOW_BORDERLESS | sdl2.SDL_WINDOW_FULLSCREEN_DESKTOP)
 
     # Create the visualiser to store state about the app
     surface = window.get_surface()

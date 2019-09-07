@@ -22,10 +22,10 @@ class FFTVisualisation:
         self.fft_src = fft_source
 
         # Scan vertically
-        self.scan_y             = surface.h - 100
+        self.scan_y             = surface.h - 1
         self._delay             = DEFAULT_DELAY
         self.fft_range          = DEFAULT_FFT_RANGE
-        self.leading_line_width = 3
+        self.leading_line_width = 2
         self.pause              = False
         self.party_mode         = False
         self.fft_freq_range     = 1
@@ -52,6 +52,7 @@ class FFTVisualisation:
     def toggle_pause(self):
         self.pause = not self.pause
         print(f"Pause: {self.pause}")
+        # self._render_text("test")
 
     def toggle_party_mode(self):
         self.party_mode = not self.party_mode
@@ -82,7 +83,7 @@ class FFTVisualisation:
                 self.scan_y = self.surface.h - 1
 
         if self.party_mode:
-            self.colour_offset += 0.001
+            self.colour_offset += self.colour_range * 0.001
 
     def _render_leading_line(self):
         """Render the black leading FFT line"""
@@ -99,10 +100,6 @@ class FFTVisualisation:
 
         for p in points:
             pixels[p[0]][self.scan_y] = self.colour_simple(p[1])
-
-        self.colour_offset += 0.00001
-        if self.colour_offset > 1:
-            self.colour_offset = 0
 
 
     @staticmethod
@@ -124,6 +121,11 @@ class FFTVisualisation:
 
         return list(zip(x_samples, y_values))
 
+
+
+    # def _render_text(self, text):
+    #     font_manager = sdl2.ext.FontManager(sdl2.ext.Resources(__file__, "fonts").get_path("tuffy.ttf"))
+    #     surface = font_manager.render(text)
 
     # def render_line(surface, colour, buf, y_range=None, y_pos=None, downsample=5, y_zoom=1):
 
