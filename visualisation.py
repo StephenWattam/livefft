@@ -17,7 +17,7 @@ MIN_DELAY = 1
 MAX_DELAY = 100
 
 TEXT_MARGIN = 5
-CLOCK_HEIGHT = 20
+CLOCK_FORMAT = "%x %H:%M"
 
 class FFTVisualisation:
 
@@ -25,6 +25,7 @@ class FFTVisualisation:
 
         self.surface = surface
         self.fft_src = fft_source
+        self.font_manager = sdl2.ext.FontManager(sdl2.ext.Resources(__file__, "fonts").get_path("tuffy.ttf"))
 
         # Scan vertically
         self.scan_y             = surface.h - 1
@@ -34,7 +35,6 @@ class FFTVisualisation:
         self.pause              = False
         self.party_mode         = False
         self.clock              = False
-        self.scan_y_since_last_clock = self.surface.h
         self.fft_freq_range     = 1
 
         # Colour settings (0-1)
@@ -78,7 +78,6 @@ class FFTVisualisation:
 
         sdl2.ext.fill(self.surface, BLACK)
         self.scan_y = self.surface.h - 1
-        self.scan_y_since_last_clock = self.surface.h - 1
 
     def update(self):
 
@@ -95,14 +94,13 @@ class FFTVisualisation:
         self._render_leading_line()
         self._render_fft_colour_line(fft_buf)
 
-        if self.clock and self.scan_y_since_last_clock - self.scan_y  > CLOCK_HEIGHT + TEXT_MARGIN:
-            self._render_clock()
 
         if not self.pause:
             self.scan_y -= 1
             if self.scan_y < 0:
                 self.scan_y = self.surface.h - 1
-                self.scan_y_since_last_clock = self.surface.h - 1
+                if self.clock:
+                    self._render_clock()
 
         if self.party_mode:
             self.colour_offset += self.colour_range * 0.001
@@ -146,28 +144,40 @@ class FFTVisualisation:
 
 
 
-    def _status_text(self, text, right_align=True, below_line=False):
-        font_manager = sdl2.ext.FontManager(sdl2.ext.Resources(__file__, "fonts").get_path("tuffy.ttf"))
+    def _status_text(self, text):
 
-        text_surface = font_manager.render(text)
+        text_surface = self.font_manager.render(text)
         text_rect = text_surface.clip_rect
 
-        # Compute position
-        if below_line:
-            dst_y = min(self.scan_y + TEXT_MARGIN, self.surface.h - text_surface.h - TEXT_MARGIN)
-        else:
-            dst_y = max(self.scan_y - text_surface.h - TEXT_MARGIN, 0)
-        if right_align:
-            dst_x = max(self.surface.w - text_surface.w - TEXT_MARGIN, 0)
-        else:
-            dst_x = TEXT_MARGIN
+        # FIXME: draw a box instead of tons of lines.  Sheesh.
+        for i in range(0, min(self.surface.h, text_rect.h + 2*TEXT_MARGIN)):
+            sdl2.ext.line(self.surface, BLACK, (0, i, self.surface.w, i))
+        sdl2.SDL_BlitSurface(text_surface, None, self.surface, sdl2.SDL_Rect(TEXT_MARGIN, TEXT_MARGIN))
 
-        sdl2.SDL_BlitSurface(text_surface, None, self.surface, sdl2.SDL_Rect(dst_x, dst_y))
+        # # Compute position
+        # if below_line:
+        #     dst_y = min(self.scan_y + TEXT_MARGIN, self.surface.h - text_surface.h - TEXT_MARGIN)
+        # else:
+        #     dst_y = max(self.scan_y - text_surface.h - TEXT_MARGIN, 0)
+        # if right_align:
+        #     dst_x = max(self.surface.w - text_surface.w - TEXT_MARGIN, 0)
+        # else:
+        #     dst_x = TEXT_MARGIN
+
+        # sdl2.SDL_BlitSurface(text_surface, None, self.surface, sdl2.SDL_Rect(dst_x, dst_y))
 
     def _render_clock(self):
-        now = datetime.now().strftime("%x  %X")
-        self._status_text(now, below_line=True)
-        self.scan_y_since_last_clock = self.scan_y
+        """Draw a clock in the top-right corner of the screen."""
+
+        now = datetime.now().strftime(CLOCK_FORMAT)
+        text_surface = self.font_manager.render(now)
+        text_rect = text_surface.clip_rect
+
+
+        dst_x = max(self.surface.w - text_surface.w - TEXT_MARGIN, 0)
+        dst_y = min(TEXT_MARGIN, self.surface.h)
+        sdl2.SDL_BlitSurface(text_surface, None, self.surface, sdl2.SDL_Rect(dst_x, dst_y))
+
 
     # def render_line(surface, colour, buf, y_range=None, y_pos=None, downsample=5, y_zoom=1):
 
