@@ -21,8 +21,9 @@ class SoundCardDataSource(DataSource):
 
     def __init__(self, num_chunks, channels=1, sampling_rate=44100,
                  chunk_size=1024):
-        self.fs = sampling_rate
-        self.channels = int(channels)
+
+        self.fs         = sampling_rate
+        self.channels   = int(channels)
         self.chunk_size = int(chunk_size)
         self.num_chunks = int(num_chunks)
 
@@ -55,7 +56,6 @@ class SoundCardDataSource(DataSource):
             stream_callback=callback,
             input=True
         )
-
 
     def get_buffer(self):
         """Return all chunks joined together"""
@@ -117,7 +117,7 @@ class FFTDataSource(threading.Thread):
         self.log_scale = log_scale
 
     def get_buffer(self):
-        
+
         data      = self._src.get_buffer()
         time_vals = self._src.x_axis_values     # FIXME: can be cached
         weighting = np.exp(time_vals / time_vals[-1])
