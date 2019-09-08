@@ -17,7 +17,7 @@ MIN_DELAY = 1
 MAX_DELAY = 100
 
 TEXT_MARGIN = 5
-CLOCK_FORMAT = "%x %H:%M"
+CLOCK_FORMAT = "%d/%m/%y %H:%M"
 
 class FFTVisualisation:
 
