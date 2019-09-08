@@ -86,6 +86,10 @@ Known Issues
  * GPGPU FFT on a raspberry pi
  * Reading email :-P
 
+LICENSE
+-------
+As per the original, this code is [MIT licensed](LICENSE).
+
 Contact
 -------
 Please [get in touch](https://stephenwattam.com/contact) if you have any ideas/suggestions/wants/thanks/offers of sexual favours.
