@@ -17,10 +17,10 @@ setup(
     description='A live FFT visualisation using SDL',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/StephenWattam/livefftsdl'
+    url='https://github.com/StephenWattam/livefftsdl',
     author='Steve Wattam; Rick Lupton',
     author_email='steve@stephenwattam.com',  # Optional
-    classifiers=[  # Optional
+    classifiers=[
         'Development Status :: 4 - Beta',
 
         # Pick your license as you wish
@@ -48,7 +48,7 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.
     package_data={  # Optional
-        'fonts': ['fonts/tuffy.ttf'],
+        'fonts': ['livefftsdl/fonts/tuffy.ttf'],
     },
     # data_files=[('my_data', ['data/data_file'])],
     entry_points={  # Optional

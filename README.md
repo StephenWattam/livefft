@@ -16,6 +16,7 @@ Dependencies
 -------------
 
  * SDL2, and SDL-ttf packages
+ * QT5 (you can swap this out for another QT if you know what you're doing, as it's only required by PySDL2, which supports other backends)
  * Python 3+
  * Python packages listed in [requirements.txt](requirements.txt)
 
@@ -26,14 +27,12 @@ Installation
 ### Arch Linux
 
  * SDL: `pacman -S sdl2_ttf sdl2`
- * Tool using pip: `pip install livefft-sdl`
+ * Tool using pip: `pip install livefftsdl`
 
 ### Ubuntu
 
  * SDL: `apt install libsdl2-dev libsdl2-ttf-dev`
- * Tool using pip: `pip3 install livefft-sdl`
-
-
+ * Tool using pip: `pip3 install livefftsdl`
 
 
 Usage
@@ -43,15 +42,15 @@ Usage
 
 Simply run this from your terminal:
 
-    livefft-sdl
+    livefftsdl
 
 
 ### Running locally
 
  1. Do whatever setup for virtualenvs you usually use
  2. Clone the repository (see the green clone button in github or ask your friendly neighborhood developer)
- 3. `pip install -r requirements.txt`
- 4. `python livefft-sdl.py`
+ 3. `pip install -e .`
+ 4. `livefftsdl`
 
 ### Keyboard shortcuts
 
