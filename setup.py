@@ -38,8 +38,8 @@ setup(
     keywords='audio visualisation fft',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     python_requires='>=3.5',
-    install_requires=['numpy==1.17.2', 'PyAudio==0.2.11', 'PyQt5==5.13.0', 'PyQt5-sip==4.19.18',
-                       'pyqtgraph==0.10.0', 'PySDL2==0.9.6'],
+    install_requires=['numpy>=1.17.2', 'PyAudio>=0.2.11', 'PyQt5>=5.13.0', 'PyQt5-sip>=4.19.18',
+                       'pyqtgraph>=0.10.0', 'PySDL2>=0.9.6'],
     extras_require={
         'dev': [],
         'test': [], # TODO!
@@ -48,7 +48,7 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.
     package_data={  # Optional
-        'fonts': ['livefftsdl/fonts/tuffy.ttf'],
+        'livefftsdl': ['fonts/tuffy.ttf'],
     },
     # data_files=[('my_data', ['data/data_file'])],
     entry_points={  # Optional
